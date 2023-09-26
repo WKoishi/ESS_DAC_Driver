@@ -18,12 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +57,9 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define BufferSize 256
+uint8_t WriteBuffer[BufferSize], ReadBuffer[BufferSize];
+
 /* USER CODE END 0 */
 
 /**
@@ -65,7 +69,9 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	
+	int volume_left = 0, volume_right = 0;
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -87,8 +93,30 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+	HAL_Delay(1000);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
+	
+	for (int i = 0; i < 2; i++)
+	{
+		WriteBuffer[0] = 75;
+		HAL_I2C_Mem_Write(&hi2c1, 0X90, 0X0F, I2C_MEMADD_SIZE_8BIT, WriteBuffer, 1, 0XFF);
+		HAL_Delay(10);
+		HAL_I2C_Mem_Write(&hi2c1, 0X90, 0X10, I2C_MEMADD_SIZE_8BIT, WriteBuffer, 1, 0XFF);
+		
+		HAL_Delay(100);
+		
+		HAL_I2C_Mem_Read(&hi2c1, 0X90, 0X0F, I2C_MEMADD_SIZE_8BIT, ReadBuffer, 1, 0XFF);
+		volume_left = ReadBuffer[0];
+		HAL_Delay(10);
+		HAL_I2C_Mem_Read(&hi2c1, 0X90, 0X10, I2C_MEMADD_SIZE_8BIT, ReadBuffer, 1, 0XFF);
+		volume_right = ReadBuffer[0];
+		
+		printf("%d, %d", volume_left, volume_right);
+		HAL_Delay(100);
+	}
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,6 +128,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 		HAL_Delay(500);
+
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 		HAL_Delay(500);
   }
