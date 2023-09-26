@@ -100,7 +100,7 @@ int main(void)
 	
 	for (int i = 0; i < 2; i++)
 	{
-		WriteBuffer[0] = 75;
+		WriteBuffer[0] = 80;
 		HAL_I2C_Mem_Write(&hi2c1, 0X90, 0X0F, I2C_MEMADD_SIZE_8BIT, WriteBuffer, 1, 0XFF);
 		HAL_Delay(10);
 		HAL_I2C_Mem_Write(&hi2c1, 0X90, 0X10, I2C_MEMADD_SIZE_8BIT, WriteBuffer, 1, 0XFF);
